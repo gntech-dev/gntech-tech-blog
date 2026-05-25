@@ -19,6 +19,19 @@ function callbackSummary(action) {
   return { emoji: 'ℹ️', label: 'Unknown action' };
 }
 
+function parseCallbackData(data) {
+  const value = String(data || '');
+  const current = value.match(/^blog:(approve|reject|changes):(\d+)$/);
+  if (current) return { action: current[1], prNumberRaw: current[2] };
+
+  // Legacy messages sent before the webhook handler existed used this shorter
+  // format. Keep accepting it so old approval buttons still give feedback.
+  const legacy = value.match(/^(approve|reject|changes):(\d+)$/);
+  if (legacy) return { action: legacy[1], prNumberRaw: legacy[2] };
+
+  return null;
+}
+
 async function telegramApi(token, method, payload) {
   const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: 'POST',
@@ -31,6 +44,15 @@ async function telegramApi(token, method, payload) {
   }
 
   return response.json();
+}
+
+async function tryTelegramApi(token, method, payload) {
+  try {
+    return await telegramApi(token, method, payload);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
 
 async function githubApi(env, path, payload) {
@@ -84,7 +106,13 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: 'Unauthorized.' }, 401);
   }
 
-  const update = await request.json();
+  let update;
+  try {
+    update = await request.json();
+  } catch {
+    return json({ ok: false, error: 'Invalid JSON body.' });
+  }
+
   const callback = update.callback_query;
   if (!callback) {
     return json({ ok: true, ignored: 'No callback_query in update.' });
@@ -92,47 +120,59 @@ export async function onRequestPost({ request, env }) {
 
   const chatId = String(callback.message?.chat?.id ?? '');
   if (chatId !== String(env.TELEGRAM_CHAT_ID)) {
-    await telegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
+    await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
       callback_query_id: callback.id,
       text: 'This approval button is not authorized for this chat.',
       show_alert: true,
     });
-    return json({ ok: false, error: 'Unauthorized chat.' }, 403);
+    return json({ ok: false, error: 'Unauthorized chat.' });
   }
 
-  const match = String(callback.data || '').match(/^blog:(approve|reject|changes):(\d+)$/);
-  if (!match) {
-    await telegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
+  const parsedCallback = parseCallbackData(callback.data);
+  if (!parsedCallback) {
+    await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
       callback_query_id: callback.id,
       text: 'Unsupported approval action.',
       show_alert: true,
     });
-    return json({ ok: false, error: 'Unsupported callback_data.' }, 400);
+    return json({ ok: false, error: 'Unsupported callback_data.' });
   }
 
-  const [, action, prNumberRaw] = match;
+  const { action, prNumberRaw } = parsedCallback;
   const prNumber = safeNumber(prNumberRaw);
   if (!prNumber) {
-    await telegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
+    await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
       callback_query_id: callback.id,
       text: 'Invalid PR number.',
       show_alert: true,
     });
-    return json({ ok: false, error: 'Invalid PR number.' }, 400);
+    return json({ ok: false, error: 'Invalid PR number.' });
   }
 
   const summary = callbackSummary(action);
-  await telegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
+  await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
     callback_query_id: callback.id,
     text: `${summary.emoji} ${summary.label} recorded for PR #${prNumber}.`,
     show_alert: false,
   });
 
-  await githubApi(env, `/issues/${prNumber}/comments`, {
-    body: decisionComment({ action, prNumber, user: callback.from }),
-  });
+  try {
+    await githubApi(env, `/issues/${prNumber}/comments`, {
+      body: decisionComment({ action, prNumber, user: callback.from }),
+    });
+  } catch (error) {
+    console.error(error);
+    await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'sendMessage', {
+      chat_id: env.TELEGRAM_CHAT_ID,
+      text: `${summary.emoji} ${summary.label} received for PR #${prNumber}, but I could not add the GitHub PR comment. Please check the Cloudflare GITHUB_TOKEN permissions.`,
+      reply_to_message_id: callback.message?.message_id,
+      disable_web_page_preview: true,
+    });
 
-  await telegramApi(env.TELEGRAM_BOT_TOKEN, 'sendMessage', {
+    return json({ ok: false, action, prNumber, error: 'GitHub comment failed.' });
+  }
+
+  await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'sendMessage', {
     chat_id: env.TELEGRAM_CHAT_ID,
     text: `${summary.emoji} ${summary.label} recorded for PR #${prNumber}. I added the decision to the GitHub PR comments.`,
     reply_to_message_id: callback.message?.message_id,
