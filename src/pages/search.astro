@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Search | GNTECH Engineering Notes">
+  <h1 class="text-3xl font-bold">Search</h1>
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
+  <div id="search" class="mt-6"></div>
+  <script is:inline>
+    window.addEventListener('DOMContentLoaded', () => new PagefindUI({ element: '#search', showSubResults: true }));
+  </script>
+</BaseLayout>

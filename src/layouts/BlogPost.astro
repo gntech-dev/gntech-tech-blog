@@ -1,0 +1,19 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import GiscusComments from '../components/GiscusComments.astro';
+const { frontmatter } = Astro.props;
+---
+<BaseLayout title={`${frontmatter.title} | GNTECH Engineering Notes`} description={frontmatter.description}>
+  <article class="prose prose-invert max-w-none prose-headings:scroll-mt-20 prose-a:text-sky-300" data-pagefind-body>
+    <p class="text-sm uppercase tracking-wide text-sky-300">{frontmatter.category} · {frontmatter.risk_level} risk</p>
+    <h1>{frontmatter.title}</h1>
+    <p class="lead">{frontmatter.description}</p>
+    <div class="not-prose mb-8 flex flex-wrap gap-2 text-sm text-slate-300">
+      <span>Published: {new Date(frontmatter.pubDate).toLocaleDateString('en-US')}</span>
+      {frontmatter.updatedDate && <span>Updated: {new Date(frontmatter.updatedDate).toLocaleDateString('en-US')}</span>}
+      <span>Validated by: {frontmatter.validated_by}</span>
+    </div>
+    <slot />
+  </article>
+  <GiscusComments />
+</BaseLayout>

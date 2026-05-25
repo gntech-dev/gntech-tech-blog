@@ -1,0 +1,23 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "Cloudflare",
+    "frontmatter",
+    "Gerlin",
+    "Giscus",
+    "GNTECH",
+    "homelab",
+    "Mikro",
+    "Nolasco",
+    "Pagefind",
+    "Shiki",
+    "Tailwind",
+    "unreviewed"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    "dist/**",
+    ".astro/**"
+  ]
+}

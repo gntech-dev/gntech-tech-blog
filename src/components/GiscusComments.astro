@@ -1,0 +1,28 @@
+---
+const repo = import.meta.env.PUBLIC_GISCUS_REPO;
+const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID;
+const category = import.meta.env.PUBLIC_GISCUS_CATEGORY || 'Announcements';
+const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID;
+const enabled = repo && repoId && categoryId;
+---
+{enabled ? (
+  <section class="mt-12 border-t border-slate-800 pt-8">
+    <script is:inline src="https://giscus.app/client.js"
+      data-repo={repo}
+      data-repo-id={repoId}
+      data-category={category}
+      data-category-id={categoryId}
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="bottom"
+      data-theme="dark"
+      data-lang="en"
+      crossorigin="anonymous"
+      async>
+    </script>
+  </section>
+) : (
+  <p class="mt-12 rounded-lg border border-slate-800 p-4 text-sm text-slate-400">Giscus is not configured yet. Set PUBLIC_GISCUS_REPO, PUBLIC_GISCUS_REPO_ID, and PUBLIC_GISCUS_CATEGORY_ID.</p>
+)}

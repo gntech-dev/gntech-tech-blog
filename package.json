@@ -1,0 +1,39 @@
+{
+  "name": "gntech-tech-blog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "check": "astro check",
+    "lint:md": "markdownlint-cli2 \"src/content/**/*.md\" \"src/content/**/*.mdx\" \"*.md\"",
+    "spell": "cspell \"src/**/*.{md,mdx,astro,ts,js}\" \"*.md\"",
+    "links": "node scripts/check-links.mjs",
+    "validate:frontmatter": "node scripts/validate-frontmatter.mjs",
+    "validate:all": "npm run lint:md && npm run spell && npm run validate:frontmatter && npm run links && npm run build",
+    "approval:telegram": "node scripts/send-telegram-approval.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "latest",
+    "@astrojs/mdx": "^4.3.14",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/tailwind": "latest",
+    "astro": "^5.18.1",
+    "giscus": "latest",
+    "pagefind": "latest",
+    "sharp": "latest",
+    "tailwindcss": "^3.4.17",
+    "typescript": "latest",
+    "yaml": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "cspell": "latest",
+    "gray-matter": "latest",
+    "markdown-link-check": "latest",
+    "markdownlint-cli2": "latest"
+  }
+}

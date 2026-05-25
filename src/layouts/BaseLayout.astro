@@ -1,0 +1,33 @@
+---
+import '../styles/global.css';
+const { title = 'GNTECH Engineering Notes', description = 'Practical infrastructure, homelab, networking, Linux, and AI operations notes.' } = Astro.props;
+const analyticsToken = import.meta.env.PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    {analyticsToken && <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={`{"token":"${analyticsToken}"}`}></script>}
+  </head>
+  <body>
+    <header class="border-b border-slate-800 bg-panel/70 backdrop-blur">
+      <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+        <a class="text-lg font-bold no-underline text-white" href="/">GNTECH Engineering Notes</a>
+        <div class="flex gap-4 text-sm">
+          <a href="/blog/">Blog</a>
+          <a href="/rss.xml">RSS</a>
+          <a href="/search/">Search</a>
+        </div>
+      </nav>
+    </header>
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <slot />
+    </main>
+    <footer class="mx-auto max-w-5xl border-t border-slate-800 px-4 py-8 text-sm text-slate-400">
+      Practical notes by Gerlin Nolasco. Validated technical content; no fake benchmarks.
+    </footer>
+  </body>
+</html>

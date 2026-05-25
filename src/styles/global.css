@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html { scroll-behavior: smooth; }
+body { @apply bg-ink text-slate-100 antialiased; }
+a { @apply text-sky-300 hover:text-sky-200 underline-offset-4; }
+.prose pre { @apply border border-slate-700 rounded-xl; }
+.prose code:not(pre code) { @apply rounded bg-slate-800 px-1 py-0.5 text-sky-200; }
