@@ -1,5 +1,5 @@
 ---
-title: Expose One Homelab Service with Cloudflare Tunnel and Docker Compose
+title: Expose One Homelab Service with Cloudflare Tunnel and Compose
 description: A practical, low-risk Cloudflare Tunnel pattern for publishing one internal web service without opening router ports.
 pubDate: 2026-05-25
 updatedDate: 2026-05-25
@@ -18,7 +18,7 @@ validated_by: GPT-5.5
 risk_level: low
 ---
 
-# Expose One Homelab Service with Cloudflare Tunnel and Docker Compose
+# Expose One Homelab Service with Cloudflare Tunnel and Compose
 
 Estimated reading time: 12 minutes
 
@@ -231,7 +231,7 @@ cloudflared tunnel --config /home/gntech/tunnels/my-service/cloudflared/config.y
 cloudflared tunnel --config /home/gntech/tunnels/my-service/cloudflared/config.yml ingress rule https://service.example.com
 ```
 
-### 5. Create the Docker Compose file
+### 5. Create the Compose file
 
 Create `/home/gntech/tunnels/my-service/compose.yml`:
 
