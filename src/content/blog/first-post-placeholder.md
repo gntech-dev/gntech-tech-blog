@@ -9,7 +9,7 @@ tags:
   - automation
   - astro
 category: Blog Operations
-draft: false
+draft: true
 validated_by: GPT-5.5
 risk_level: low
 ---
