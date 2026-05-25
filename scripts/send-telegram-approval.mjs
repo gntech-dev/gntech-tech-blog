@@ -5,15 +5,15 @@ if (!postPath) {
   console.error('Usage: npm run approval:telegram -- src/content/blog/post.md https://github.com/owner/repo/pull/1');
   process.exit(1);
 }
+const prNumber = prUrl.match(/\/pull\/(\d+)/)?.[1];
+if (!prNumber) {
+  console.error(`Could not determine pull request number from URL: ${prUrl}`);
+  process.exit(1);
+}
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const chatId = process.env.TELEGRAM_CHAT_ID;
 if (!token || !chatId) {
   console.error('TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required.');
-  process.exit(1);
-}
-const prNumber = prUrl.match(/\/pull\/(\d+)/)?.[1];
-if (!prNumber) {
-  console.error(`Could not determine pull request number from URL: ${prUrl}`);
   process.exit(1);
 }
 const parsed = matter.read(postPath);
