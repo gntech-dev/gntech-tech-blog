@@ -23,3 +23,51 @@ jobs:
         run: npm ci
       - name: Validate content and build
         run: npm run validate:all
+
+  telegram-approval:
+    needs: validate
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Find changed published blog post
+        id: post
+        run: |
+          node --input-type=module <<'EOF'
+          import { execSync } from 'node:child_process';
+          import { appendFileSync } from 'node:fs';
+          import matter from 'gray-matter';
+
+          const base = process.env.PR_BASE_SHA;
+          const head = process.env.PR_HEAD_SHA;
+          const diff = execSync(`git diff --name-only ${base} ${head} -- 'src/content/blog/*.md' 'src/content/blog/*.mdx'`, { encoding: 'utf8' });
+          const candidates = diff.split('\n').filter(Boolean);
+          const post = candidates.find((file) => {
+            const parsed = matter.read(file);
+            return parsed.data.draft !== true;
+          });
+
+          appendFileSync(process.env.GITHUB_OUTPUT, `post=${post ?? ''}\n`);
+          EOF
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      - name: Send Telegram approval request
+        if: steps.post.outputs.post != ''
+        run: npm run approval:telegram -- "${{ steps.post.outputs.post }}" "${{ github.event.pull_request.html_url }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
