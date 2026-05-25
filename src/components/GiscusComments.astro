@@ -1,8 +1,8 @@
 ---
-const repo = import.meta.env.PUBLIC_GISCUS_REPO;
-const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID;
-const category = import.meta.env.PUBLIC_GISCUS_CATEGORY || 'Announcements';
-const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID;
+const repo = import.meta.env.PUBLIC_GISCUS_REPO || 'gntech-dev/gntech-tech-blog';
+const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID || 'R_kgDOSnmBXA';
+const category = import.meta.env.PUBLIC_GISCUS_CATEGORY || 'General';
+const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID || 'DIC_kwDOSnmBXM4C906T';
 const enabled = repo && repoId && categoryId;
 ---
 {enabled ? (

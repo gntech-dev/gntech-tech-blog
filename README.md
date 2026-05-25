@@ -32,6 +32,21 @@ npm run validate:all
 
 Do not merge or publish directly. Each post needs a pull request, GPT-5.5 technical validation, successful local/GitHub checks, and Telegram approval.
 
+## Giscus comments
+
+Comments use GitHub Discussions through Giscus.
+
+Default repo settings are baked into `src/components/GiscusComments.astro` for Cloudflare Pages:
+
+```text
+PUBLIC_GISCUS_REPO=gntech-dev/gntech-tech-blog
+PUBLIC_GISCUS_REPO_ID=R_kgDOSnmBXA
+PUBLIC_GISCUS_CATEGORY=General
+PUBLIC_GISCUS_CATEGORY_ID=DIC_kwDOSnmBXM4C906T
+```
+
+Required one-time GitHub step: install the [Giscus GitHub App](https://github.com/apps/giscus) for `gntech-dev/gntech-tech-blog` if comments show a repository/category access error.
+
 ## Content location
 
 Posts live in:
