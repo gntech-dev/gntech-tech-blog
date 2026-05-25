@@ -11,6 +11,11 @@ if (!token || !chatId) {
   console.error('TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required.');
   process.exit(1);
 }
+const prNumber = prUrl.match(/\/pull\/(\d+)/)?.[1];
+if (!prNumber) {
+  console.error(`Could not determine pull request number from URL: ${prUrl}`);
+  process.exit(1);
+}
 const parsed = matter.read(postPath);
 const data = parsed.data;
 const commands = [...parsed.content.matchAll(/```(?:bash|sh|shell|yaml|yml|toml|json|text)?\n([\s\S]*?)```/g)].length;
@@ -38,9 +43,9 @@ const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`,
     text,
     reply_markup: {
       inline_keyboard: [[
-        { text: '✅ Approve', callback_data: `blog:approve:${data.title}` },
-        { text: '❌ Reject', callback_data: `blog:reject:${data.title}` },
-        { text: '🛠 Request changes', callback_data: `blog:changes:${data.title}` },
+        { text: '✅ Approve', callback_data: `blog:approve:${prNumber}` },
+        { text: '❌ Reject', callback_data: `blog:reject:${prNumber}` },
+        { text: '🛠 Request changes', callback_data: `blog:changes:${prNumber}` },
       ]],
     },
   }),

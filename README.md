@@ -32,6 +32,27 @@ npm run validate:all
 
 Do not merge or publish directly. Each post needs a pull request, GPT-5.5 technical validation, successful local/GitHub checks, and Telegram approval.
 
+## Telegram approval callbacks
+
+The GitHub Action sends approval messages with inline buttons. The buttons need the Cloudflare Pages Function at `/api/telegram-approval` plus a Telegram webhook.
+
+Required Cloudflare Pages production environment variables:
+
+```text
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+TELEGRAM_WEBHOOK_SECRET=
+GITHUB_TOKEN=
+```
+
+`GITHUB_TOKEN` must be a GitHub token that can comment on pull requests in this repo. The callback does not auto-merge; it records approve, reject, or request-changes decisions as PR comments and sends Telegram feedback.
+
+After the Pages Function is deployed, configure the bot webhook from a trusted shell:
+
+```bash
+TELEGRAM_BOT_TOKEN=... TELEGRAM_WEBHOOK_SECRET=... npm run approval:webhook:set -- https://blog.gntechlabs.me/api/telegram-approval
+```
+
 ## Giscus comments
 
 Comments use GitHub Discussions through Giscus.
