@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Page not found" description="The requested GNTECH Engineering Notes page could not be found.">
+  <section class="rounded-2xl border border-slate-800 bg-panel p-8">
+    <p class="text-sm uppercase tracking-wide text-sky-300">404</p>
+    <h1 class="mt-2 text-4xl font-bold">Page not found</h1>
+    <p class="mt-4 max-w-3xl text-slate-300">
+      This page does not exist, or the article is still a draft waiting for validation and approval.
+    </p>
+    <div class="mt-6 flex gap-4 text-sm">
+      <a href="/">Go home</a>
+      <a href="/blog/">View published posts</a>
+      <a href="/search/">Search the knowledge base</a>
+    </div>
+  </section>
+</BaseLayout>
