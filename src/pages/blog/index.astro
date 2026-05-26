@@ -7,10 +7,13 @@ const posts = (await getCollection('blog')).filter((p) => !p.data.draft).sort((a
   <h1 class="text-3xl font-bold">Blog</h1>
   <div class="mt-6 grid gap-4">
     {posts.map((post) => (
-      <a href={`/blog/${post.slug}/`} class="rounded-xl border border-slate-800 bg-slate-900 p-5 no-underline hover:border-sky-500">
-        <div class="text-sm text-sky-300">{post.data.category} · {post.data.risk_level} risk</div>
-        <h2 class="mt-1 text-xl font-semibold text-white">{post.data.title}</h2>
-        <p class="mt-2 text-slate-300">{post.data.description}</p>
+      <a href={`/blog/${post.slug}/`} class="grid gap-5 overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 no-underline hover:border-sky-500 md:grid-cols-[240px_1fr]">
+        {post.data.image && <img src={post.data.image.src} alt={post.data.image.alt} width="1200" height="630" loading="lazy" class="aspect-[1200/630] w-full rounded-lg object-cover" />}
+        <div>
+          <div class="text-sm text-sky-300">{post.data.category} · {post.data.risk_level} risk</div>
+          <h2 class="mt-1 text-xl font-semibold text-white">{post.data.title}</h2>
+          <p class="mt-2 text-slate-300">{post.data.description}</p>
+        </div>
       </a>
     ))}
   </div>

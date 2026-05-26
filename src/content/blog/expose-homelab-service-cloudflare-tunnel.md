@@ -16,6 +16,10 @@ category: Infrastructure
 draft: false
 validated_by: GPT-5.5
 risk_level: low
+image:
+  src: /images/blog/cloudflare-tunnel-reference.png
+  alt: "Reference architecture diagram showing browser traffic through Cloudflare Tunnel to a private homelab service."
+  caption: "Reference flow for a single Cloudflare Tunnel hostname: public HTTPS reaches Cloudflare, then returns over an outbound tunnel to the private origin."
 ---
 
 # Expose One Homelab Service with Cloudflare Tunnel and Compose

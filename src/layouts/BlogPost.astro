@@ -5,10 +5,13 @@ const { frontmatter } = Astro.props;
 const title = `${frontmatter.title} | GNTECH Engineering Notes`;
 const publishedTime = frontmatter.pubDate?.toISOString();
 const modifiedTime = (frontmatter.updatedDate ?? frontmatter.pubDate)?.toISOString();
+const postImage = frontmatter.image;
 ---
 <BaseLayout
   title={title}
   description={frontmatter.description}
+  image={postImage?.src}
+  imageAlt={postImage?.alt}
   type="article"
   publishedTime={publishedTime}
   modifiedTime={modifiedTime}
@@ -24,6 +27,20 @@ const modifiedTime = (frontmatter.updatedDate ?? frontmatter.pubDate)?.toISOStri
         <span class="rounded-full border border-slate-700 bg-slate-900 px-3 py-1">Published: {new Date(frontmatter.pubDate).toLocaleDateString('en-US')}</span>
         {frontmatter.updatedDate && <span class="rounded-full border border-slate-700 bg-slate-900 px-3 py-1">Updated: {new Date(frontmatter.updatedDate).toLocaleDateString('en-US')}</span>}
       </div>
+      {postImage && (
+        <figure class="mt-8 overflow-hidden rounded-2xl border border-slate-700 bg-slate-950">
+          <img
+            src={postImage.src}
+            alt={postImage.alt}
+            width="1200"
+            height="630"
+            loading="eager"
+            decoding="async"
+            class="aspect-[1200/630] w-full object-cover"
+          />
+          {postImage.caption && <figcaption class="border-t border-slate-800 px-4 py-3 text-sm text-slate-400">{postImage.caption}</figcaption>}
+        </figure>
+      )}
     </header>
     <div class="prose prose-invert prose-lg max-w-none prose-headings:scroll-mt-24 prose-headings:font-bold prose-h2:mt-14 prose-h2:border-b prose-h2:border-slate-800 prose-h2:pb-3 prose-h2:text-3xl prose-h3:text-2xl prose-p:leading-8 prose-a:text-sky-300 prose-a:decoration-sky-500/50 hover:prose-a:text-sky-200 prose-strong:text-white prose-code:text-sky-200 prose-pre:border prose-pre:border-slate-700 prose-pre:bg-slate-950 prose-table:text-sm prose-th:border prose-th:border-slate-700 prose-th:bg-slate-900 prose-th:p-3 prose-td:border prose-td:border-slate-800 prose-td:p-3 prose-blockquote:border-sky-400 prose-blockquote:bg-slate-900/70 prose-blockquote:px-5 prose-blockquote:py-2 prose-blockquote:not-italic">
       <slot />

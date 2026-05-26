@@ -13,6 +13,11 @@ const blog = defineCollection({
     draft: z.boolean().default(false),
     validated_by: z.literal('GPT-5.5'),
     risk_level: z.enum(['low', 'medium', 'high']),
+    image: z.object({
+      src: z.string().startsWith('/'),
+      alt: z.string().min(20),
+      caption: z.string().min(20).optional(),
+    }).optional(),
   }),
 });
 
