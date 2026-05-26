@@ -18,6 +18,8 @@ function safeNumber(value) {
 }
 
 function callbackSummary(action) {
+  if (action === 'approve-only') return { emoji: '✅', label: 'Approved (no publish)' };
+  if (action === 'approve-and-publish') return { emoji: '🚀', label: 'Approved and published' };
   if (action === 'approve') return { emoji: '✅', label: 'Approved' };
   if (action === 'reject') return { emoji: '❌', label: 'Rejected' };
   if (action === 'changes') return { emoji: '🛠', label: 'Changes requested' };
@@ -26,7 +28,7 @@ function callbackSummary(action) {
 
 function parseCallbackData(data) {
   const value = String(data || '');
-  const current = value.match(/^blog:(approve|reject|changes):(\d+)$/);
+  const current = value.match(/^blog:(approve-only|approve-and-publish|approve|reject|changes|request-changes):(\d+)$/);
   if (current) return { action: current[1], prNumberRaw: current[2] };
 
   // Legacy messages sent before the webhook handler existed used this shorter
@@ -97,11 +99,13 @@ function decisionComment({ action, prNumber, user, publishResult }) {
   const actor = user?.username ? `@${user.username}` : user?.id ? `Telegram user ${user.id}` : 'Telegram approval button';
   const timestamp = new Date().toISOString();
 
-  const actionNote = action === 'approve'
+  const actionNote = action === 'approve' || action === 'approve-and-publish'
     ? publishResult?.published
       ? `Approval recorded and PR #${prNumber} was squash-merged for publishing.`
       : `Approval recorded, but automatic publishing did not run: ${publishResult?.reason || 'unknown reason'}.`
-    : action === 'reject'
+    : action === 'approve-only'
+      ? `Approval recorded. This PR is NOT being published. A separate &quot;Approve &amp; publish&quot; action is needed to merge.`
+      : action === 'reject'
       ? 'Rejection recorded. This PR must not be merged unless a new approval is requested and received.'
       : 'Changes requested. Please review and update the PR before requesting approval again.';
 
@@ -271,11 +275,11 @@ export async function onRequestPost({ request, env }) {
   await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', {
     callback_query_id: callback.id,
     text: `${summary.emoji} ${summary.label} recorded for PR #${prNumber}.`,
-    show_alert: false,
+    show_alert: true,
   });
 
   let publishResult = null;
-  if (action === 'approve') {
+  if (action === 'approve-and-publish' || action === 'approve') {
     try {
       publishResult = await publishApprovedPr(env, prNumber);
     } catch (error) {
@@ -300,11 +304,13 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, action, prNumber, error: 'GitHub comment failed.', publishResult });
   }
 
-  const followUp = action === 'approve'
+  const followUp = action === 'approve-and-publish' || action === 'approve'
     ? publishResult?.published
       ? `✅ Approved and published PR #${prNumber}. Cloudflare Pages will deploy main automatically. Merge commit: ${publishResult.sha}`
       : `⚠️ Approved PR #${prNumber}, but I did not publish it: ${publishResult?.reason || 'unknown reason'}`
-    : `${summary.emoji} ${summary.label} recorded for PR #${prNumber}. I added the decision to the GitHub PR comments.`;
+    : action === 'approve-only'
+      ? `✅ Approval recorded for PR #${prNumber}. PR is NOT published. Use &quot;Approve &amp; publish&quot; when ready.`
+      : `${summary.emoji} ${summary.label} recorded for PR #${prNumber}. I added the decision to the GitHub PR comments.`;
 
   await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'sendMessage', {
     chat_id: env.TELEGRAM_CHAT_ID,
