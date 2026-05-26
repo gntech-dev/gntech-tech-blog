@@ -17,9 +17,12 @@ draft: false
 validated_by: GPT-5.5
 risk_level: low
 image:
-  src: /images/blog/cloudflare-tunnel-reference.png
-  alt: "Reference architecture diagram showing browser traffic through Cloudflare Tunnel to a private homelab service."
-  caption: "Reference flow for a single Cloudflare Tunnel hostname: public HTTPS reaches Cloudflare, then returns over an outbound tunnel to the private origin."
+  src: /images/blog/cloudflare-tunnel-docs-how-to.png
+  alt: "Official Cloudflare Tunnel diagram showing a private origin connected to Cloudflare through an outbound tunnel."
+  caption: "Cloudflare Tunnel reference image from Cloudflare Docs showing how outbound tunnel connectivity reaches a private origin."
+  credit: "Cloudflare Docs"
+  source: https://github.com/cloudflare/cloudflare-docs/blob/production/src/assets/images/pages/how-to/tunnel.png
+  license: "CC BY 4.0"
 ---
 
 # Expose One Homelab Service with Cloudflare Tunnel and Compose

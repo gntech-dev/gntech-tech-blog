@@ -17,6 +17,9 @@ const blog = defineCollection({
       src: z.string().startsWith('/'),
       alt: z.string().min(20),
       caption: z.string().min(20).optional(),
+      credit: z.string().min(2).optional(),
+      source: z.string().url().optional(),
+      license: z.string().min(2).optional(),
     }).optional(),
   }),
 });

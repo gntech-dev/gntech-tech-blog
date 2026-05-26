@@ -50,6 +50,18 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') || f.ends
         console.error(`${file}: image.caption must explain what the reference image shows`);
         failed = true;
       }
+      if (typeof data.image.credit !== 'string' || data.image.credit.length < 2) {
+        console.error(`${file}: image.credit must identify the image source or creator`);
+        failed = true;
+      }
+      if (typeof data.image.source !== 'string' || !data.image.source.startsWith('https://')) {
+        console.error(`${file}: image.source must be an HTTPS source URL`);
+        failed = true;
+      }
+      if (typeof data.image.license !== 'string' || data.image.license.length < 2) {
+        console.error(`${file}: image.license must identify the license or usage basis`);
+        failed = true;
+      }
       const imagePath = path.join('public', data.image.src);
       if (!fs.existsSync(imagePath)) {
         console.error(`${file}: image file does not exist at ${imagePath}`);
