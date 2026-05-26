@@ -9,7 +9,7 @@ tags:
   - debian
   - ubuntu
   - docker
-  - docker-compose
+  - compose-plugin
   - containerd
   - containerization
   - devops
