@@ -1,0 +1,36 @@
+name: Telegram webhook watchdog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'functions/api/telegram-approval.js'
+      - 'scripts/set-telegram-webhook.mjs'
+      - '.github/workflows/telegram-webhook.yml'
+
+concurrency:
+  group: telegram-webhook-watchdog
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  TELEGRAM_WEBHOOK_URL: https://gntech-tech-blog.pages.dev/api/telegram-approval
+
+jobs:
+  ensure-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Ensure Telegram webhook is configured
+        run: node scripts/set-telegram-webhook.mjs "$TELEGRAM_WEBHOOK_URL"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
