@@ -42,11 +42,16 @@ const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`,
     chat_id: chatId,
     text,
     reply_markup: {
-      inline_keyboard: [[
-        { text: '✅ Approve', callback_data: `blog:approve:${prNumber}` },
-        { text: '❌ Reject', callback_data: `blog:reject:${prNumber}` },
-        { text: '🛠 Request changes', callback_data: `blog:changes:${prNumber}` },
-      ]],
+      inline_keyboard: [
+        [
+          { text: '✅ Approve only', callback_data: `blog:approve_only:${prNumber}` },
+          { text: '🚀 Approve & publish', callback_data: `blog:approve:${prNumber}` },
+        ],
+        [
+          { text: '❌ Reject', callback_data: `blog:reject:${prNumber}` },
+          { text: '🛠 Request changes', callback_data: `blog:changes:${prNumber}` },
+        ],
+      ],
     },
   }),
 });

@@ -45,7 +45,7 @@ TELEGRAM_WEBHOOK_SECRET=
 GITHUB_TOKEN=
 ```
 
-`GITHUB_TOKEN` must be a GitHub token that can read PRs/checks, comment on PRs, and merge PRs in this repo. The callback publishes only when the Telegram action is Approve and the PR passes all guarded checks: open, not draft, targeting `main`, mergeable, validation checks green, and changed files limited to blog content, blog images, or `cspell.json`. Reject and Request changes never publish; they only record the decision and send Telegram feedback.
+`GITHUB_TOKEN` must be a GitHub token that can read PRs/checks, comment on PRs, and merge PRs in this repo. Telegram messages include separate actions: Approve only records approval without merging, while Approve & publish attempts the guarded squash merge. Publishing only runs when the PR passes all guarded checks: open, not draft, targeting `main`, mergeable, validation checks green, and changed files limited to blog content, blog images, or `cspell.json`. Reject and Request changes never publish; they only record the decision and send Telegram feedback.
 
 After the Pages Function is deployed, configure the bot webhook from a trusted shell:
 

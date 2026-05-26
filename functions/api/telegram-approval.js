@@ -18,6 +18,7 @@ function safeNumber(value) {
 }
 
 function callbackSummary(action) {
+  if (action === 'approve_only') return { emoji: '✅', label: 'Approved only' };
   if (action === 'approve') return { emoji: '✅', label: 'Approved' };
   if (action === 'reject') return { emoji: '❌', label: 'Rejected' };
   if (action === 'changes') return { emoji: '🛠', label: 'Changes requested' };
@@ -26,12 +27,12 @@ function callbackSummary(action) {
 
 function parseCallbackData(data) {
   const value = String(data || '');
-  const current = value.match(/^blog:(approve|reject|changes):(\d+)$/);
+  const current = value.match(/^blog:(approve_only|approve|reject|changes):(\d+)$/);
   if (current) return { action: current[1], prNumberRaw: current[2] };
 
   // Legacy messages sent before the webhook handler existed used this shorter
   // format. Keep accepting it so old approval buttons still give feedback.
-  const legacy = value.match(/^(approve|reject|changes):(\d+)$/);
+  const legacy = value.match(/^(approve_only|approve|reject|changes):(\d+)$/);
   if (legacy) return { action: legacy[1], prNumberRaw: legacy[2] };
 
   return null;
@@ -101,6 +102,8 @@ function decisionComment({ action, prNumber, user, publishResult }) {
     ? publishResult?.published
       ? `Approval recorded and PR #${prNumber} was squash-merged for publishing.`
       : `Approval recorded, but automatic publishing did not run: ${publishResult?.reason || 'unknown reason'}.`
+    : action === 'approve_only'
+      ? 'Approval recorded only. This did not publish or merge the PR.'
     : action === 'reject'
       ? 'Rejection recorded. This PR must not be merged unless a new approval is requested and received.'
       : 'Changes requested. Please review and update the PR before requesting approval again.';
@@ -304,6 +307,8 @@ export async function onRequestPost({ request, env }) {
     ? publishResult?.published
       ? `✅ Approved and published PR #${prNumber}. Cloudflare Pages will deploy main automatically. Merge commit: ${publishResult.sha}`
       : `⚠️ Approved PR #${prNumber}, but I did not publish it: ${publishResult?.reason || 'unknown reason'}`
+    : action === 'approve_only'
+      ? `✅ Approval recorded only for PR #${prNumber}. I did not merge or publish it.`
     : `${summary.emoji} ${summary.label} recorded for PR #${prNumber}. I added the decision to the GitHub PR comments.`;
 
   await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'sendMessage', {
