@@ -5,7 +5,53 @@ import matter from 'gray-matter';
 const dir = 'src/content/blog';
 const required = ['title', 'description', 'pubDate', 'author', 'tags', 'category', 'draft', 'validated_by', 'risk_level'];
 const allowedRisk = new Set(['low', 'medium', 'high']);
+const allowedImageLicenses = new Set([
+  'CC BY 4.0',
+  'CC BY-SA 4.0',
+  'CC0 1.0',
+  'Public Domain',
+  'MIT',
+  'Apache-2.0',
+  'GNTECH original',
+  'Own work',
+  'Official media kit',
+  'Official press kit',
+  'Permission granted'
+]);
+const sourceUrlCache = new Map();
 let failed = false;
+
+async function isReachableSourceUrl(url) {
+  if (sourceUrlCache.has(url)) return sourceUrlCache.get(url);
+
+  const result = await (async () => {
+    const headers = { 'User-Agent': 'GNTECH-blog-validator/1.0' };
+    const timeout = AbortSignal.timeout(15000);
+
+    try {
+      const head = await fetch(url, { method: 'HEAD', headers, redirect: 'follow', signal: timeout });
+      if (head.ok) return true;
+      if (![403, 405, 429].includes(head.status)) return false;
+    } catch {
+      // Some sites block HEAD. Fall back to a small GET request below.
+    }
+
+    try {
+      const get = await fetch(url, {
+        method: 'GET',
+        headers: { ...headers, Range: 'bytes=0-1023' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(15000)
+      });
+      return get.ok || get.status === 206;
+    } catch {
+      return false;
+    }
+  })();
+
+  sourceUrlCache.set(url, result);
+  return result;
+}
 
 for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') || f.endsWith('.mdx'))) {
   const file = path.join(dir, name);
@@ -57,9 +103,15 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') || f.ends
       if (typeof data.image.source !== 'string' || !data.image.source.startsWith('https://')) {
         console.error(`${file}: image.source must be an HTTPS source URL`);
         failed = true;
+      } else if (!(await isReachableSourceUrl(data.image.source))) {
+        console.error(`${file}: image.source must be reachable and return HTTP 2xx/206: ${data.image.source}`);
+        failed = true;
       }
       if (typeof data.image.license !== 'string' || data.image.license.length < 2) {
         console.error(`${file}: image.license must identify the license or usage basis`);
+        failed = true;
+      } else if (!allowedImageLicenses.has(data.image.license)) {
+        console.error(`${file}: image.license must be one of: ${[...allowedImageLicenses].join(', ')}`);
         failed = true;
       }
       const imagePath = path.join('public', data.image.src);
