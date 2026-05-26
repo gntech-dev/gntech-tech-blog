@@ -80,6 +80,23 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') || f.ends
     failed = true;
   }
   if (!data.draft) {
+    // pubDate must be within 1 day of the current date
+    const pubDate = new Date(data.pubDate);
+    if (isNaN(pubDate.getTime())) {
+      console.error(`${file}: pubDate must be a valid date`);
+      failed = true;
+    } else {
+      const now = new Date();
+      const diffDays = (now - pubDate) / (1000 * 60 * 60 * 24);
+      if (diffDays < 0) {
+        console.error(`${file}: pubDate cannot be in the future`);
+        failed = true;
+      }
+      if (diffDays > 3) {
+        console.error(`${file}: pubDate is ${diffDays.toFixed(0)} days in the past; must be within 3 days of today`);
+        failed = true;
+      }
+    }
     if (!data.image || typeof data.image !== 'object') {
       console.error(`${file}: published posts must include an image object with src, alt, and caption`);
       failed = true;
