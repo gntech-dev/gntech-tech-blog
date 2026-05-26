@@ -20,9 +20,12 @@ draft: false
 validated_by: GPT-5.5
 risk_level: low
 image:
-  src: /images/blog/cloudflare-access-reference.png
-  alt: "Reference architecture diagram showing Cloudflare Access authenticating users before Tunnel traffic reaches a private origin."
-  caption: "Reference flow for Cloudflare Access in front of a tunnel service: identity policy first, tunnel routing second, private origin last."
+  src: /images/blog/cloudflare-access-docs-standard-flow.png
+  alt: "Official Cloudflare Access standard flow diagram showing user authentication before a protected application request reaches the origin."
+  caption: "Cloudflare Access standard flow for a protected application: user request, Access authentication, signed token, and origin delivery."
+  credit: "Cloudflare Docs"
+  source: https://github.com/cloudflare/cloudflare-docs/blob/production/src/assets/images/cloudflare-one/applications/access-standard-flow.png
+  license: "CC BY 4.0"
 ---
 
 # Add Cloudflare Access in Front of a Tunnel Service

@@ -38,7 +38,17 @@ const postImage = frontmatter.image;
             decoding="async"
             class="aspect-[1200/630] w-full object-cover"
           />
-          {postImage.caption && <figcaption class="border-t border-slate-800 px-4 py-3 text-sm text-slate-400">{postImage.caption}</figcaption>}
+          {(postImage.caption || postImage.credit || postImage.source || postImage.license) && (
+            <figcaption class="border-t border-slate-800 px-4 py-3 text-sm text-slate-400">
+              {postImage.caption && <span>{postImage.caption}</span>}
+              {(postImage.credit || postImage.source || postImage.license) && (
+                <span class="mt-1 block text-xs text-slate-500">
+                  Image: {postImage.source ? <a class="text-sky-300 underline decoration-sky-500/50" href={postImage.source} rel="noreferrer">{postImage.credit ?? 'source'}</a> : postImage.credit}
+                  {postImage.license && <> · {postImage.license}</>}
+                </span>
+              )}
+            </figcaption>
+          )}
         </figure>
       )}
     </header>
