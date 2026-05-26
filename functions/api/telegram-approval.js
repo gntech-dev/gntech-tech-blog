@@ -94,6 +94,17 @@ async function githubApi(env, path, payload) {
   return githubRequest(env, path, { method: 'POST', body: payload });
 }
 
+function isPublishAction(action) {
+  return action === 'approve' || action === 'approve-and-publish';
+}
+
+function isDuplicateClosedPublish(action, publishResult) {
+  return isPublishAction(action)
+    && publishResult
+    && !publishResult.published
+    && /^PR is closed, not open\.?$/i.test(String(publishResult.reason || '').trim());
+}
+
 function decisionComment({ action, prNumber, user, publishResult }) {
   const summary = callbackSummary(action);
   const actor = user?.username ? `@${user.username}` : user?.id ? `Telegram user ${user.id}` : 'Telegram approval button';
@@ -279,13 +290,24 @@ export async function onRequestPost({ request, env }) {
   });
 
   let publishResult = null;
-  if (action === 'approve-and-publish' || action === 'approve') {
+  if (isPublishAction(action)) {
     try {
       publishResult = await publishApprovedPr(env, prNumber);
     } catch (error) {
       console.error(error);
       publishResult = { published: false, reason: error.message };
     }
+  }
+
+  if (isDuplicateClosedPublish(action, publishResult)) {
+    await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'sendMessage', {
+      chat_id: env.TELEGRAM_CHAT_ID,
+      text: `ℹ️ Duplicate publish click ignored for PR #${prNumber}; the PR is already closed.`,
+      reply_to_message_id: callback.message?.message_id,
+      disable_web_page_preview: true,
+    });
+
+    return json({ ok: true, action, prNumber, duplicate: true, publishResult });
   }
 
   try {
