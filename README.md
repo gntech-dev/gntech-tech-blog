@@ -90,5 +90,14 @@ category:
 draft: false
 validated_by: GPT-5.5
 risk_level:
+image:
+  src: /images/blog/example-reference.png
+  alt: "Descriptive alt text explaining the image."
+  caption: "Short caption explaining why the image is relevant."
+  credit: "Source or creator name"
+  source: https://example.com/original-image-or-file-page
+  license: "License or usage basis"
 ---
 ```
+
+Published posts must include a reference image with attribution. Follow `docs/image-sourcing-workflow.md` before adding external images. Do not scrape random images unless reuse rights are explicit and attribution is recorded.
