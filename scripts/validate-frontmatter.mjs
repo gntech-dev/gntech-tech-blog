@@ -131,8 +131,16 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') || f.ends
     }
   }
   if (parsed.content.includes('docker-compose')) {
-    console.error(`${file}: use docker compose, not docker-compose`);
-    failed = true;
+    // Allow the apt package name docker-compose-plugin and the tag usage
+    const lines = parsed.content.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.includes('docker-compose') && !trimmed.includes('docker-compose-plugin') && !trimmed.startsWith('- docker-compose') && !trimmed.startsWith('  - docker-compose')) {
+        console.error(`${file}: use docker compose, not docker-compose`);
+        failed = true;
+        break;
+      }
+    }
   }
 }
 
