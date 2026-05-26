@@ -1,7 +1,7 @@
 ---
 title: SSH Hardening Without Locking Yourself Out
 description: A practical Debian and Ubuntu SSH hardening guide focused on safe staged changes, rollback planning, key-only access, sudo survival checks, UFW, fail2ban, and verification before closing old access paths.
-pubDate: 2026-05-26
+pubDate: 2026-05-25
 updatedDate: 2026-05-26
 author: Gerlin Nolasco
 tags:
