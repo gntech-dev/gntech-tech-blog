@@ -2,8 +2,19 @@
 import BaseLayout from './BaseLayout.astro';
 import GiscusComments from '../components/GiscusComments.astro';
 const { frontmatter } = Astro.props;
+const title = `${frontmatter.title} | GNTECH Engineering Notes`;
+const publishedTime = frontmatter.pubDate?.toISOString();
+const modifiedTime = (frontmatter.updatedDate ?? frontmatter.pubDate)?.toISOString();
 ---
-<BaseLayout title={`${frontmatter.title} | GNTECH Engineering Notes`} description={frontmatter.description}>
+<BaseLayout
+  title={title}
+  description={frontmatter.description}
+  type="article"
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+  tags={frontmatter.tags}
+  author={frontmatter.author}
+>
   <article class="mx-auto max-w-3xl" data-pagefind-body>
     <header class="mb-10 rounded-3xl border border-slate-800 bg-panel/80 p-6 shadow-2xl shadow-sky-950/20 md:p-8">
       <p class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">{frontmatter.category} · {frontmatter.risk_level} risk</p>
