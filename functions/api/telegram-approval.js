@@ -1,4 +1,9 @@
 const REPO_DEFAULT = 'gntech-dev/gntech-tech-blog';
+const ALLOWED_CONTENT_PATHS = [
+  /^src\/content\/blog\/[^/]+\.mdx?$/,
+  /^public\/images\/blog\/[^/]+\.png$/,
+  /^cspell\.json$/,
+];
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -32,6 +37,10 @@ function parseCallbackData(data) {
   return null;
 }
 
+function isAllowedContentPath(path) {
+  return ALLOWED_CONTENT_PATHS.some((pattern) => pattern.test(path));
+}
+
 async function telegramApi(token, method, payload) {
   const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: 'POST',
@@ -55,10 +64,10 @@ async function tryTelegramApi(token, method, payload) {
   }
 }
 
-async function githubApi(env, path, payload) {
+async function githubRequest(env, path, options = {}) {
   const repository = env.GITHUB_REPOSITORY || REPO_DEFAULT;
   const response = await fetch(`https://api.github.com/repos/${repository}${path}`, {
-    method: 'POST',
+    method: options.method || 'GET',
     headers: {
       accept: 'application/vnd.github+json',
       authorization: `Bearer ${env.GITHUB_TOKEN}`,
@@ -66,20 +75,35 @@ async function githubApi(env, path, payload) {
       'user-agent': 'gntech-tech-blog-telegram-approval',
       'x-github-api-version': '2022-11-28',
     },
-    body: JSON.stringify(payload),
+    body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : null;
+
   if (!response.ok) {
-    throw new Error(`GitHub API failed: ${response.status} ${await response.text()}`);
+    throw new Error(`GitHub API ${options.method || 'GET'} ${path} failed: ${response.status} ${text}`);
   }
 
-  return response.json();
+  return body;
 }
 
-function decisionComment({ action, prNumber, user }) {
+async function githubApi(env, path, payload) {
+  return githubRequest(env, path, { method: 'POST', body: payload });
+}
+
+function decisionComment({ action, prNumber, user, publishResult }) {
   const summary = callbackSummary(action);
   const actor = user?.username ? `@${user.username}` : user?.id ? `Telegram user ${user.id}` : 'Telegram approval button';
   const timestamp = new Date().toISOString();
+
+  const actionNote = action === 'approve'
+    ? publishResult?.published
+      ? `Approval recorded and PR #${prNumber} was squash-merged for publishing.`
+      : `Approval recorded, but automatic publishing did not run: ${publishResult?.reason || 'unknown reason'}.`
+    : action === 'reject'
+      ? 'Rejection recorded. This PR must not be merged unless a new approval is requested and received.'
+      : 'Changes requested. Please review and update the PR before requesting approval again.';
 
   return [
     `${summary.emoji} Telegram publishing decision: ${summary.label}`,
@@ -88,12 +112,106 @@ function decisionComment({ action, prNumber, user }) {
     `Actor: ${actor}`,
     `Received: ${timestamp}`,
     '',
-    action === 'approve'
-      ? 'Approval recorded. Jarvis may proceed with the normal guarded merge/publish workflow after final checks.'
-      : action === 'reject'
-        ? 'Rejection recorded. This PR must not be merged unless a new approval is requested and received.'
-        : 'Changes requested. Please review and update the PR before requesting approval again.',
+    actionNote,
   ].join('\n');
+}
+
+function allChecksSuccessful(statuses, checkRuns) {
+  const statusItems = statuses.statuses || [];
+  const checkItems = checkRuns.check_runs || [];
+
+  const failingStatuses = statusItems.filter((item) => item.state !== 'success');
+  const failingChecks = checkItems.filter((item) => {
+    if (item.status !== 'completed') return true;
+    return !['success', 'skipped', 'neutral'].includes(item.conclusion);
+  });
+
+  const hasAnySignal = statusItems.length > 0 || checkItems.length > 0;
+  return {
+    ok: hasAnySignal && failingStatuses.length === 0 && failingChecks.length === 0,
+    failing: [
+      ...failingStatuses.map((item) => `${item.context}: ${item.state}`),
+      ...failingChecks.map((item) => `${item.name}: ${item.status}/${item.conclusion || 'pending'}`),
+    ],
+  };
+}
+
+async function assertSafeToPublish(env, prNumber) {
+  const pr = await githubRequest(env, `/pulls/${prNumber}`);
+
+  if (pr.state !== 'open') {
+    return { ok: false, reason: `PR is ${pr.state}, not open.` };
+  }
+  if (pr.draft) {
+    return { ok: false, reason: 'PR is still a draft.' };
+  }
+  if (pr.base?.ref !== 'main') {
+    return { ok: false, reason: `PR targets ${pr.base?.ref || 'unknown'}, not main.` };
+  }
+  if (pr.mergeable === false || pr.mergeable_state === 'dirty') {
+    return { ok: false, reason: 'PR is not mergeable cleanly.' };
+  }
+
+  const files = await githubRequest(env, `/pulls/${prNumber}/files?per_page=100`);
+  if (!files.length) {
+    return { ok: false, reason: 'PR has no changed files.' };
+  }
+
+  const disallowedFiles = files
+    .map((file) => file.filename)
+    .filter((filename) => !isAllowedContentPath(filename));
+  if (disallowedFiles.length) {
+    return {
+      ok: false,
+      reason: `PR changes files outside the blog publishing allowlist: ${disallowedFiles.join(', ')}`,
+    };
+  }
+
+  const changedPosts = files.filter((file) => /^src\/content\/blog\/[^/]+\.mdx?$/.test(file.filename));
+  if (!changedPosts.length) {
+    return { ok: false, reason: 'PR does not change a blog post.' };
+  }
+
+  const headSha = pr.head?.sha;
+  if (!headSha) {
+    return { ok: false, reason: 'Could not determine PR head commit.' };
+  }
+
+  const [statuses, checkRuns] = await Promise.all([
+    githubRequest(env, `/commits/${headSha}/status`),
+    githubRequest(env, `/commits/${headSha}/check-runs?per_page=100`),
+  ]);
+  const checks = allChecksSuccessful(statuses, checkRuns);
+  if (!checks.ok) {
+    return {
+      ok: false,
+      reason: checks.failing.length ? `Checks are not green: ${checks.failing.join('; ')}` : 'No successful validation checks found.',
+    };
+  }
+
+  return { ok: true, pr };
+}
+
+async function publishApprovedPr(env, prNumber) {
+  const safety = await assertSafeToPublish(env, prNumber);
+  if (!safety.ok) {
+    return { published: false, reason: safety.reason };
+  }
+
+  const pr = safety.pr;
+  const merge = await githubRequest(env, `/pulls/${prNumber}/merge`, {
+    method: 'PUT',
+    body: {
+      merge_method: 'squash',
+      commit_title: `${pr.title} (#${prNumber})`,
+    },
+  });
+
+  return {
+    published: true,
+    reason: merge.message || 'PR merged.',
+    sha: merge.sha,
+  };
 }
 
 export async function onRequestPost({ request, env }) {
@@ -156,9 +274,19 @@ export async function onRequestPost({ request, env }) {
     show_alert: false,
   });
 
+  let publishResult = null;
+  if (action === 'approve') {
+    try {
+      publishResult = await publishApprovedPr(env, prNumber);
+    } catch (error) {
+      console.error(error);
+      publishResult = { published: false, reason: error.message };
+    }
+  }
+
   try {
     await githubApi(env, `/issues/${prNumber}/comments`, {
-      body: decisionComment({ action, prNumber, user: callback.from }),
+      body: decisionComment({ action, prNumber, user: callback.from, publishResult }),
     });
   } catch (error) {
     console.error(error);
@@ -169,17 +297,23 @@ export async function onRequestPost({ request, env }) {
       disable_web_page_preview: true,
     });
 
-    return json({ ok: false, action, prNumber, error: 'GitHub comment failed.' });
+    return json({ ok: false, action, prNumber, error: 'GitHub comment failed.', publishResult });
   }
+
+  const followUp = action === 'approve'
+    ? publishResult?.published
+      ? `✅ Approved and published PR #${prNumber}. Cloudflare Pages will deploy main automatically. Merge commit: ${publishResult.sha}`
+      : `⚠️ Approved PR #${prNumber}, but I did not publish it: ${publishResult?.reason || 'unknown reason'}`
+    : `${summary.emoji} ${summary.label} recorded for PR #${prNumber}. I added the decision to the GitHub PR comments.`;
 
   await tryTelegramApi(env.TELEGRAM_BOT_TOKEN, 'sendMessage', {
     chat_id: env.TELEGRAM_CHAT_ID,
-    text: `${summary.emoji} ${summary.label} recorded for PR #${prNumber}. I added the decision to the GitHub PR comments.`,
+    text: followUp,
     reply_to_message_id: callback.message?.message_id,
     disable_web_page_preview: true,
   });
 
-  return json({ ok: true, action, prNumber });
+  return json({ ok: true, action, prNumber, publishResult });
 }
 
 export async function onRequestGet() {
