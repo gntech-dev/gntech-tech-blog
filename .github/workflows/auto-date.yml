@@ -29,7 +29,24 @@ jobs:
             echo "$file: fixed pubDate $current_date → $commit_date"
           done
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "fix: auto-correct blog post pubDates"
-          file_pattern: src/content/blog/*.md
+      - name: Create PR with date fix
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          timestamp=$(date +%s)
+          branch_name="auto-date-fix-${timestamp}"
+          git checkout -b "$branch_name"
+          git commit -m "fix: auto-correct blog post pubDates"
+          git push origin "$branch_name"
+          gh pr create \
+            --base main \
+            --head "$branch_name" \
+            --title "fix: auto-correct blog post pubDates" \
+            --body "Auto-generated PR correcting pubDate to match git commit date." \
+            --label automated
