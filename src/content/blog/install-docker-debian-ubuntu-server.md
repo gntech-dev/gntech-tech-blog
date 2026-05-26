@@ -101,12 +101,12 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
-| Distro   | Codename |
-|----------|----------|
+| Distro | Codename |
+| --- | --- |
 | Ubuntu 24.04 | noble |
 | Ubuntu 22.04 | jammy |
-| Debian 12    | bookworm (use VERSION_CODENAME) |
-| Debian 11    | bullseye |
+| Debian 12 | bookworm, use VERSION_CODENAME |
+| Debian 11 | bullseye |
 
 For Debian, the environment variable `VERSION_CODENAME` is set instead of `UBUNTU_CODENAME`. Use this alternative one-liner:
 
@@ -196,7 +196,7 @@ docker info | grep -i "pool\|live-restore\|Storage Driver"
 This configuration:
 
 | Setting | Purpose |
-|---------|---------|
+| --- | --- |
 | log-driver / log-opts | Limits per-container logs to 30 MB total, preventing disk fills from noisy containers. |
 | default-address-pools | Prevents Docker bridge networks from conflicting with LAN or VPN subnets. |
 | live-restore | Containers keep running during `systemctl restart docker` for maintenance or config changes. |
@@ -250,7 +250,7 @@ Rootless Docker is socket-activated and starts on demand. System Docker remains 
 Summary of all files and their roles:
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | `/etc/apt/keyrings/docker.asc` | Docker GPG key for signed apt repository access. |
 | `/etc/apt/sources.list.d/docker.list` | Apt source entry pointing to the official Docker repository. |
 | `/etc/docker/daemon.json` | Docker daemon configuration for log rotation, address pools, live-restore, and storage. |
@@ -299,7 +299,7 @@ docker info | grep -E "Server Version|Storage Driver|Logging Driver|Live Restore
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
-|---------|-------------|-----|
+| --- | --- | --- |
 | `permission denied` when connecting to Docker socket | User not in docker group | `sudo usermod -aG docker $USER` and re-login. |
 | `connect: connection refused` | Docker daemon not running | `sudo systemctl start docker && sudo systemctl enable docker`. |
 | `W: GPG error: ... NO_PUBKEY` | GPG key missing or wrong signed-by path | Re-run the GPG key setup and verify the path in the sources list. |
