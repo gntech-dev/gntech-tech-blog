@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+<title id="title">Cloudflare Access in front of Tunnel service</title>
+<desc id="desc">A visitor must pass Cloudflare Access before traffic reaches the tunnel and private origin service.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07111f"/><stop offset="0.45" stop-color="#111827"/><stop offset="1" stop-color="#052e16"/></linearGradient>
+  <linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#a3e635"/></linearGradient>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity="0.35"/></filter>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<circle cx="1000" cy="120" r="190" fill="#22c55e" opacity="0.08"/>
+<circle cx="110" cy="560" r="230" fill="#38bdf8" opacity="0.08"/>
+<text x="70" y="86" fill="#e2e8f0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="800">Reference architecture</text>
+<text x="70" y="126" fill="#86efac" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22">Cloudflare Access before a Tunnel service</text>
+<g font-family="Inter,Segoe UI,Arial,sans-serif" filter="url(#shadow)">
+  <rect x="56" y="225" width="190" height="138" rx="24" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="151" y="280" fill="#f8fafc" font-size="24" font-weight="700" text-anchor="middle">Visitor</text>
+  <text x="151" y="316" fill="#cbd5e1" font-size="18" text-anchor="middle">Browser</text>
+  <rect x="365" y="205" width="220" height="178" rx="28" fill="url(#green)"/>
+  <text x="475" y="263" fill="#052e16" font-size="27" font-weight="900" text-anchor="middle">Access</text>
+  <text x="475" y="300" fill="#052e16" font-size="18" font-weight="700" text-anchor="middle">identity policy</text>
+  <text x="475" y="330" fill="#052e16" font-size="18" font-weight="700" text-anchor="middle">OTP / IdP / mTLS</text>
+  <rect x="690" y="220" width="190" height="148" rx="26" fill="#111827" stroke="#f97316" stroke-width="2"/>
+  <text x="785" y="280" fill="#f8fafc" font-size="24" font-weight="800" text-anchor="middle">Tunnel</text>
+  <text x="785" y="315" fill="#fed7aa" font-size="18" text-anchor="middle">cloudflared</text>
+  <rect x="980" y="220" width="168" height="148" rx="26" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+  <text x="1064" y="280" fill="#f8fafc" font-size="24" font-weight="800" text-anchor="middle">Origin</text>
+  <text x="1064" y="315" fill="#bae6fd" font-size="18" text-anchor="middle">private app</text>
+</g>
+<g stroke-linecap="round" stroke-width="8" fill="none">
+  <path d="M258 294 H343" stroke="#38bdf8"/>
+  <path d="M325 276 L349 294 L325 312" stroke="#38bdf8" stroke-linejoin="round"/>
+  <path d="M600 294 H668" stroke="#22c55e"/>
+  <path d="M650 276 L674 294 L650 312" stroke="#22c55e" stroke-linejoin="round"/>
+  <path d="M892 294 H958" stroke="#f97316"/>
+  <path d="M940 276 L964 294 L940 312" stroke="#f97316" stroke-linejoin="round"/>
+</g>
+<text x="302" y="260" fill="#bae6fd" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" text-anchor="middle">request</text>
+<text x="635" y="260" fill="#bbf7d0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" text-anchor="middle">allowed</text>
+<text x="925" y="260" fill="#fed7aa" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" text-anchor="middle">private route</text>
+<rect x="70" y="470" width="1060" height="76" rx="22" fill="#020617" opacity="0.72" stroke="#1e293b"/>
+<text x="100" y="516" fill="#e2e8f0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" font-weight="700">Access checks identity before Tunnel traffic reaches the private origin.</text>
+</svg>

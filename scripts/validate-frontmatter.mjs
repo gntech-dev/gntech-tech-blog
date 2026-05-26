@@ -33,6 +33,30 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') || f.ends
     console.error(`${file}: tags must be a non-empty YAML list`);
     failed = true;
   }
+  if (!data.draft) {
+    if (!data.image || typeof data.image !== 'object') {
+      console.error(`${file}: published posts must include an image object with src, alt, and caption`);
+      failed = true;
+    } else {
+      if (typeof data.image.src !== 'string' || !data.image.src.startsWith('/images/blog/') || !data.image.src.endsWith('.png')) {
+        console.error(`${file}: image.src must be a PNG under /images/blog/`);
+        failed = true;
+      }
+      if (typeof data.image.alt !== 'string' || data.image.alt.length < 20) {
+        console.error(`${file}: image.alt must describe the reference image`);
+        failed = true;
+      }
+      if (typeof data.image.caption !== 'string' || data.image.caption.length < 20) {
+        console.error(`${file}: image.caption must explain what the reference image shows`);
+        failed = true;
+      }
+      const imagePath = path.join('public', data.image.src);
+      if (!fs.existsSync(imagePath)) {
+        console.error(`${file}: image file does not exist at ${imagePath}`);
+        failed = true;
+      }
+    }
+  }
   const requiredHeadings = [
     '# ', '## Overview', '## Why I Built/Tested This', '## Hardware/Software Used', '## Architecture', '## Installation', '## Full Configuration', '## Verification', '## Troubleshooting', '## Security Notes', '## Performance Notes', '## Lessons Learned', '## Future Improvements'
   ];

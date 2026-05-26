@@ -19,6 +19,10 @@ category: Security
 draft: false
 validated_by: GPT-5.5
 risk_level: low
+image:
+  src: /images/blog/cloudflare-access-reference.png
+  alt: "Reference architecture diagram showing Cloudflare Access authenticating users before Tunnel traffic reaches a private origin."
+  caption: "Reference flow for Cloudflare Access in front of a tunnel service: identity policy first, tunnel routing second, private origin last."
 ---
 
 # Add Cloudflare Access in Front of a Tunnel Service
