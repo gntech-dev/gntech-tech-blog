@@ -334,3 +334,4 @@ docker info | grep -E "Server Version|Storage Driver|Logging Driver|Live Restore
 - Integrate Docker health checks into systemd services so containers restart automatically after a host reboot.
 - Add a Docker registry mirror (pull-through cache) for the homelab to reduce bandwidth usage when multiple hosts pull the same images.
 - Set up log shipping from Docker's json-file logs to a central Loki or VictoriaLogs instance.
+- Re-check Docker's official Debian and Ubuntu installation notes during future audits, because repository setup details can change between distribution releases.
