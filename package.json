@@ -12,7 +12,8 @@
     "spell": "cspell \"src/**/*.{md,mdx,astro,ts,js}\" \"docs/**/*.md\" \".github/**/*.md\" \"*.md\"",
     "links": "node scripts/check-links.mjs",
     "validate:frontmatter": "node scripts/validate-frontmatter.mjs",
-    "validate:all": "npm run lint:md && npm run spell && npm run validate:frontmatter && npm run links && npm run build",
+    "test:telegram-callback": "node scripts/test-telegram-callback.mjs",
+    "validate:all": "npm run lint:md && npm run spell && npm run validate:frontmatter && npm run links && npm run test:telegram-callback && npm run build",
     "approval:telegram": "node scripts/send-telegram-approval.mjs",
     "approval:webhook:set": "node scripts/set-telegram-webhook.mjs"
   },
