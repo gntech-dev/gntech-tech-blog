@@ -11,6 +11,12 @@ function walk(dir) {
   }
 }
 walk('src/content');
+for (const extra of ['docs', '.github']) {
+  if (fs.existsSync(extra)) walk(extra);
+}
+for (const rootFile of ['README.md']) {
+  if (fs.existsSync(rootFile)) files.push(rootFile);
+}
 let failed = false;
 for (const file of files) {
   const result = spawnSync('npx', ['markdown-link-check', file, '--quiet'], { stdio: 'inherit' });
