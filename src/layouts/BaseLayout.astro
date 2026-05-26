@@ -1,7 +1,22 @@
 ---
 import '../styles/global.css';
-const { title = 'GNTECH Engineering Notes', description = 'Practical infrastructure, homelab, networking, Linux, and AI operations notes.' } = Astro.props;
+
+const {
+  title = 'GNTECH Engineering Notes',
+  description = 'Practical infrastructure, homelab, networking, Linux, and AI operations notes.',
+  type = 'website',
+  image = '/og-default.svg',
+  publishedTime,
+  modifiedTime,
+  tags = [],
+  author = 'Gerlin Nolasco',
+} = Astro.props;
+
 const analyticsToken = import.meta.env.PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN;
+const siteUrl = Astro.site ?? new URL(import.meta.env.SITE_URL || 'https://blog.gntechlabs.me');
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const imageUrl = new URL(image, siteUrl).toString();
+const articleTags = Array.isArray(tags) ? tags : [];
 ---
 <!doctype html>
 <html lang="en">
@@ -9,6 +24,27 @@ const analyticsToken = import.meta.env.PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:alt" content="GNTECH Engineering Notes social preview" />
+    <meta property="og:site_name" content="GNTECH Engineering Notes" />
+    <meta property="og:locale" content="en_US" />
+    {type === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {type === 'article' && modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    {type === 'article' && author && <meta property="article:author" content={author} />}
+    {type === 'article' && articleTags.map((tag: string) => <meta property="article:tag" content={tag} />)}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:image:alt" content="GNTECH Engineering Notes social preview" />
+
     <title>{title}</title>
     {analyticsToken && <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={`{"token":"${analyticsToken}"}`}></script>}
   </head>
