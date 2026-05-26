@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
+import sharp from 'sharp';
 
 const dir = 'src/content/blog';
 const required = ['title', 'description', 'pubDate', 'author', 'tags', 'category', 'draft', 'validated_by', 'risk_level'];
@@ -135,6 +136,31 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') || f.ends
       if (!fs.existsSync(imagePath)) {
         console.error(`${file}: image file does not exist at ${imagePath}`);
         failed = true;
+      } else {
+        try {
+          const metadata = await sharp(imagePath).metadata();
+          const width = metadata.width ?? 0;
+          const height = metadata.height ?? 0;
+          const aspectRatio = width / height;
+          const targetAspectRatio = 1200 / 630;
+          const aspectRatioTolerance = 0.02;
+
+          if (metadata.format !== 'png') {
+            console.error(`${file}: image file must be PNG; detected ${metadata.format ?? 'unknown'}`);
+            failed = true;
+          }
+          if (width < 1200 || height < 630) {
+            console.error(`${file}: image must be at least 1200x630 for high-quality Open Graph previews; detected ${width}x${height}`);
+            failed = true;
+          }
+          if (Math.abs(aspectRatio - targetAspectRatio) > aspectRatioTolerance) {
+            console.error(`${file}: image aspect ratio must be close to 1200x630 (1.91:1); detected ${width}x${height}`);
+            failed = true;
+          }
+        } catch (error) {
+          console.error(`${file}: could not inspect image metadata at ${imagePath}: ${error.message}`);
+          failed = true;
+        }
       }
     }
   }

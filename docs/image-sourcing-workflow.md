@@ -60,7 +60,11 @@ Rules enforced by validation:
 
 - `src` must point to a PNG under `/images/blog/`.
 - The image file must exist under `public/images/blog/`.
+- The PNG must be at least 1200×630 pixels for high-quality social previews.
+- The image aspect ratio must be close to 1200×630 (1.91:1) so Open Graph/Twitter cards are not cropped badly.
 - `alt`, `caption`, `credit`, `source`, and `license` are required for published posts.
+- `source` must be a reachable HTTPS URL.
+- `license` must be one of the approved reuse bases enforced by CI.
 - Draft posts are exempt while they are being prepared.
 
 ## File naming
@@ -118,5 +122,5 @@ image:
   caption: "GNTECH-generated reference diagram showing the article architecture."
   credit: "GNTECH"
   source: https://github.com/gntech-dev/gntech-tech-blog
-  license: "Original GNTECH diagram"
+  license: "GNTECH original"
 ```
