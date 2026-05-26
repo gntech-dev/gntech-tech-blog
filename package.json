@@ -13,7 +13,8 @@
     "links": "node scripts/check-links.mjs",
     "validate:frontmatter": "node scripts/validate-frontmatter.mjs",
     "test:telegram-callback": "node scripts/test-telegram-callback.mjs",
-    "validate:all": "npm run lint:md && npm run spell && npm run validate:frontmatter && npm run links && npm run test:telegram-callback && npm run build",
+    "validate:seo": "node scripts/validate-seo.mjs",
+    "validate:all": "npm run lint:md && npm run spell && npm run validate:frontmatter && npm run links && npm run test:telegram-callback && npm run build && npm run validate:seo",
     "approval:telegram": "node scripts/send-telegram-approval.mjs",
     "approval:webhook:set": "node scripts/set-telegram-webhook.mjs"
   },
