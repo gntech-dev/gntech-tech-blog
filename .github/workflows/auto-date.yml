@@ -1,0 +1,35 @@
+name: Auto-date blog post pubDates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/content/blog/*.md
+
+jobs:
+  auto-date:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix pubDate for changed posts
+        run: |
+          set -e
+          for file in $(git diff --name-only HEAD~1 HEAD -- src/content/blog/*.md 2>/dev/null || echo ""); do
+            [ -z "$file" ] && continue
+            commit_date=$(git log -1 --format=%ad --date=format:%Y-%m-%d -- "$file")
+            [ -z "$commit_date" ] && continue
+            current_date=$(grep "^pubDate:" "$file" | sed "s/pubDate: *//")
+            [ "$current_date" = "$commit_date" ] && echo "$file: pubDate already $commit_date" && continue
+            sed -i "s/^pubDate:.*$/pubDate: $commit_date/" "$file"
+            echo "$file: fixed pubDate $current_date → $commit_date"
+          done
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix: auto-correct blog post pubDates"
+          file_pattern: src/content/blog/*.md

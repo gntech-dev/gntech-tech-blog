@@ -1,7 +1,7 @@
 ---
 title: Debian and Ubuntu Server Hardening Baseline for Homelab Servers
 description: A practical Debian and Ubuntu hardening guide for SSH, sudo, firewall rules, automatic security updates, fail2ban, auditd, sysctl, backups, verification, and rollback.
-pubDate: 2026-05-26
+pubDate: 2026-05-25
 updatedDate: 2026-05-26
 author: Gerlin Nolasco
 tags:
